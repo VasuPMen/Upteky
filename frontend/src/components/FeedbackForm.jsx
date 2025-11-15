@@ -34,13 +34,20 @@ export default function FeedbackForm({ apiUrl, onSuccess }) {
 
   const onSubmit = async (data) => {
     try {
+      // Ensure rating is a number
+      const submitData = {
+        ...data,
+        rating: Number(data.rating) || 5
+      };
+      
       console.log('Submitting feedback to:', `${apiUrl}/api/feedback`);
-      console.log('Data:', data);
+      console.log('Data:', submitData);
+      console.log('Form validation errors:', errors);
       
       const res = await fetch(`${apiUrl}/api/feedback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(submitData)
       });
 
       console.log('Response status:', res.status);
@@ -88,7 +95,7 @@ export default function FeedbackForm({ apiUrl, onSuccess }) {
       <div className="card">
         <h2>Submit Feedback</h2>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
           {/* NAME */}
           <label htmlFor="name">Name *</label>
           <input
@@ -135,7 +142,10 @@ export default function FeedbackForm({ apiUrl, onSuccess }) {
                     type="radio"
                     id={`rating-${rating}`}
                     value={rating}
-                    {...register("rating", { required: true })}
+                    {...register("rating", { 
+                      required: true,
+                      valueAsNumber: true
+                    })}
                     onChange={() => handleRatingChange(rating)}
                     disabled={isSubmitting}
                   />
