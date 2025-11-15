@@ -1,0 +1,27 @@
+services:
+  # Backend Service
+  - type: web
+    name: feedback-api
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false  # Set this in Render dashboard
+    healthCheckPath: /
+
+  # Frontend Service
+  - type: web
+    name: feedback-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false  # Set this to your backend URL (e.g., https://feedback-api.onrender.com)
+

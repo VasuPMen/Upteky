@@ -1,0 +1,151 @@
+:root {
+    --bg: #0f1724;
+    --card: #111826;
+    --accent: #ef4444;
+    --muted: #9aa4b2;
+    color-scheme: dark;
+}
+
+body {
+    background: linear-gradient(180deg, #071024 0%, #071a2a 100%);
+    color: #e6eef6;
+    font-family: Inter, system-ui, Arial;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1, h2 {
+    margin-bottom: 12px;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6);
+    margin-bottom: 12px;
+}
+
+.main {
+    display: flex;
+    gap: 18px;
+}
+
+.left {
+    flex: 1 1 380px;
+}
+
+.right {
+    flex: 2 1 720px;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 8px 10px;
+    margin: 6px 0 12px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e6eef6;
+    border-radius: 6px;
+    transition: background 0.2s, border 0.2s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent);
+}
+
+select {
+    appearance: none; /* removes default arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg fill='white' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+}
+
+select option {
+    background: var(--card);
+    color: #e6eef6;
+}
+
+button {
+    background: var(--accent);
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover:not(:disabled) {
+    background: #f87171;
+}
+
+button:disabled {
+    opacity: 0.7;
+    cursor: default;
+}
+
+.error {
+    color: #ffb4b4;
+    margin-bottom: 8px;
+}
+
+.feedback-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.feedback-table th,
+.feedback-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    text-align: left;
+    font-size: 14px;
+}
+
+.stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.stat {
+    flex: 1;
+    text-align: center;
+    padding: 14px;
+}
+
+.controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.controls select {
+    width: 120px;
+}
+
+@media (max-width:900px) {
+    .main {
+        flex-direction: column;
+    }
+
+    .stats {
+        flex-direction: column;
+    }
+}
