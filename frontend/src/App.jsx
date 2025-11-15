@@ -7,8 +7,9 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function App() {
   const [feedbacks, setFeedbacks] = useState([]);
-  const [stats, setStats] = useState({ total:0, avgRating:0, positive:0, negative:0 });
+  const [stats, setStats] = useState({ total: 0, avgRating: 0, positive: 0, negative: 0 });
   const [filterRating, setFilterRating] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const fetchAll = async (ratingFilter) => {
     try {
@@ -19,6 +20,8 @@ export default function App() {
       setFeedbacks(data.feedbacks || []);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,14 +41,35 @@ export default function App() {
   }, [filterRating]);
 
   const onNewFeedback = () => {
-    setFilterRating(''); // reset any filter
+    setFilterRating('');
     fetchAll('');
     fetchStats();
   };
 
+  const handleExportCSV = () => {
+    const rows = [
+      ['Name', 'Email', 'Rating', 'Message', 'CreatedAt'],
+      ...feedbacks.map(f => [
+        f.name,
+        f.email || '',
+        f.rating,
+        (f.message || '').replace(/\n/g, ' '),
+        new Date(f.createdAt).toLocaleString()
+      ])
+    ];
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `feedbacks-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="container">
-      <h1>Feedback Dashboard</h1>
+      <h1>📝 Feedback Dashboard</h1>
       <StatsCards stats={stats} />
       <div className="main">
         <div className="left">
@@ -54,38 +78,44 @@ export default function App() {
         <div className="right">
           <div className="controls">
             <label>
-              Filter by rating:
-              <select value={filterRating} onChange={(e)=>setFilterRating(e.target.value)}>
-                <option value="">All</option>
-                <option value="5">5</option>
-                <option value="4">4</option>
-                <option value="3">3</option>
-                <option value="2">2</option>
-                <option value="1">1</option>
+              <span>Filter by rating:</span>
+              <select 
+                value={filterRating} 
+                onChange={(e) => setFilterRating(e.target.value)}
+                disabled={loading}
+              >
+                <option value="">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
               </select>
             </label>
-            <button onClick={() => {
-              // export CSV
-              const rows = [
-                ['Name','Email','Rating','Message','CreatedAt'],
-                ...feedbacks.map(f => [f.name, f.email || '', f.rating, (f.message||'').replace(/\n/g,' '), new Date(f.createdAt).toLocaleString()])
-              ];
-              const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-              const blob = new Blob([csv], { type: 'text/csv' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'feedbacks.csv';
-              a.click();
-              URL.revokeObjectURL(url);
-            }}>Export CSV</button>
+            <button 
+              onClick={handleExportCSV} 
+              disabled={loading || feedbacks.length === 0}
+              className="secondary"
+            >
+              <span>📥</span>
+              <span>Export CSV</span>
+            </button>
           </div>
 
-          <FeedbackTable feedbacks={feedbacks} />
+          {loading ? (
+            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+              <div className="loading" style={{ margin: '0 auto' }}></div>
+              <p style={{ marginTop: '1rem', color: 'var(--muted-light)' }}>Loading feedbacks...</p>
+            </div>
+          ) : (
+            <FeedbackTable feedbacks={feedbacks} />
+          )}
         </div>
       </div>
 
-      <footer style={{marginTop:20, fontSize:12}}>Tip: Set <code>VITE_API_URL</code> to your backend base URL when deploying.</footer>
+      <footer>
+        <p>💡 Tip: Set <code>VITE_API_URL</code> to your backend base URL when deploying.</p>
+      </footer>
     </div>
   );
 }

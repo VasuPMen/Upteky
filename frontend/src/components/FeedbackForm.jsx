@@ -1,11 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function FeedbackForm({ apiUrl, onSuccess }) {
+  const [selectedRating, setSelectedRating] = useState(5);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState('success');
+
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting }
   } = useForm({
     defaultValues: {
@@ -15,6 +20,17 @@ export default function FeedbackForm({ apiUrl, onSuccess }) {
       rating: 5
     }
   });
+
+  const handleRatingChange = (rating) => {
+    setSelectedRating(rating);
+    setValue('rating', rating);
+  };
+
+  const showNotif = (type) => {
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -27,66 +43,123 @@ export default function FeedbackForm({ apiUrl, onSuccess }) {
       const json = await res.json();
 
       if (!res.ok) {
-        alert(json.error || "Failed to submit");
+        showNotif('error');
         return;
       }
 
-      reset(); // clear form
+      reset();
+      setSelectedRating(5);
+      setValue('rating', 5);
+      showNotif('success');
       if (onSuccess) onSuccess();
     } catch (err) {
-      alert("Network error");
+      showNotif('error');
     }
   };
 
   return (
-    <div className="card">
-      <h2>Submit Feedback</h2>
+    <>
+      {showNotification && (
+        <div className={`notification ${notificationType}`}>
+          <span>{notificationType === 'success' ? '✓' : '✕'}</span>
+          <span>{notificationType === 'success' ? 'Feedback submitted successfully!' : 'Failed to submit feedback. Please try again.'}</span>
+        </div>
+      )}
+      
+      <div className="card">
+        <h2>Submit Feedback</h2>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {/* NAME */}
-        <label>Name*</label>
-        <input
-          {...register("name", { required: "Name is required" })}
-          placeholder="Enter your name"
-        />
-        {errors.name && <p className="error">{errors.name.message}</p>}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* NAME */}
+          <label htmlFor="name">Name *</label>
+          <input
+            id="name"
+            {...register("name", { required: "Name is required" })}
+            placeholder="Enter your name"
+            disabled={isSubmitting}
+          />
+          {errors.name && (
+            <p className="error">
+              <span>⚠</span>
+              {errors.name.message}
+            </p>
+          )}
 
-        {/* EMAIL */}
-        <label>Email</label>
-        <input
-          {...register("email", {
-            pattern: {
-              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: "Invalid email format"
-            }
-          })}
-          placeholder="Enter email (optional)"
-        />
-        {errors.email && <p className="error">{errors.email.message}</p>}
+          {/* EMAIL */}
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            {...register("email", {
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Invalid email format"
+              }
+            })}
+            placeholder="Enter email (optional)"
+            disabled={isSubmitting}
+          />
+          {errors.email && (
+            <p className="error">
+              <span>⚠</span>
+              {errors.email.message}
+            </p>
+          )}
 
-        {/* MESSAGE */}
-        <label>Message*</label>
-        <textarea
-          {...register("message", { required: "Message is required" })}
-          rows="4"
-          placeholder="Write your feedback"
-        />
-        {errors.message && <p className="error">{errors.message.message}</p>}
+          {/* RATING */}
+          <label>Rating *</label>
+          <div className="rating-input">
+            <div className="star-selector">
+              {[5, 4, 3, 2, 1].map((rating) => (
+                <React.Fragment key={rating}>
+                  <input
+                    type="radio"
+                    id={`rating-${rating}`}
+                    value={rating}
+                    {...register("rating", { required: true })}
+                    onChange={() => handleRatingChange(rating)}
+                    disabled={isSubmitting}
+                  />
+                  <label htmlFor={`rating-${rating}`}>★</label>
+                </React.Fragment>
+              ))}
+            </div>
+            <span style={{ color: 'var(--muted-light)', fontSize: '0.875rem' }}>
+              {selectedRating} {selectedRating === 1 ? 'star' : 'stars'}
+            </span>
+          </div>
 
-        {/* RATING */}
-        <label>Rating</label>
-        <select {...register("rating", { required: true })}>
-          <option value={5}>5</option>
-          <option value={4}>4</option>
-          <option value={3}>3</option>
-          <option value={2}>2</option>
-          <option value={1}>1</option>
-        </select>
+          {/* MESSAGE */}
+          <label htmlFor="message">Message *</label>
+          <textarea
+            id="message"
+            {...register("message", { required: "Message is required" })}
+            rows="5"
+            placeholder="Write your feedback here..."
+            disabled={isSubmitting}
+          />
+          {errors.message && (
+            <p className="error">
+              <span>⚠</span>
+              {errors.message.message}
+            </p>
+          )}
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Submit"}
-        </button>
-      </form>
-    </div>
+          <button type="submit" disabled={isSubmitting} className="success">
+            {isSubmitting ? (
+              <>
+                <span className="loading"></span>
+                <span>Submitting...</span>
+              </>
+            ) : (
+              <>
+                <span>✓</span>
+                <span>Submit Feedback</span>
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+    </>
   );
 }
