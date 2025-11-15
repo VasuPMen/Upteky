@@ -15,11 +15,19 @@ export default function App() {
     try {
       let url = `${API}/api/feedback`;
       if (ratingFilter) url += `?rating=${ratingFilter}`;
+      console.log('Fetching feedbacks from:', url);
       const res = await fetch(url);
+      
+      if (!res.ok) {
+        console.error('Failed to fetch feedbacks:', res.status, res.statusText);
+        return;
+      }
+      
       const data = await res.json();
       setFeedbacks(data.feedbacks || []);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching feedbacks:', err);
+      console.error('API URL:', API);
     } finally {
       setLoading(false);
     }
@@ -27,11 +35,20 @@ export default function App() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API}/api/feedback/stats`);
+      const url = `${API}/api/feedback/stats`;
+      console.log('Fetching stats from:', url);
+      const res = await fetch(url);
+      
+      if (!res.ok) {
+        console.error('Failed to fetch stats:', res.status, res.statusText);
+        return;
+      }
+      
       const data = await res.json();
       setStats(data);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching stats:', err);
+      console.error('API URL:', API);
     }
   };
 
@@ -67,9 +84,27 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
+  // Debug: Log API URL on mount
+  useEffect(() => {
+    console.log('Current API URL:', API);
+    console.log('Environment variable VITE_API_URL:', import.meta.env.VITE_API_URL);
+  }, []);
+
   return (
     <div className="container">
       <h1>📝 Feedback Dashboard</h1>
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{ 
+          background: 'rgba(99, 102, 241, 0.1)', 
+          border: '1px solid rgba(99, 102, 241, 0.3)', 
+          padding: '0.75rem', 
+          borderRadius: '8px', 
+          marginBottom: '1rem',
+          fontSize: '0.875rem'
+        }}>
+          🔧 <strong>Debug Mode:</strong> API URL = <code>{API}</code>
+        </div>
+      )}
       <StatsCards stats={stats} />
       <div className="main">
         <div className="left">

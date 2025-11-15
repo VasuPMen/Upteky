@@ -34,15 +34,31 @@ export default function FeedbackForm({ apiUrl, onSuccess }) {
 
   const onSubmit = async (data) => {
     try {
+      console.log('Submitting feedback to:', `${apiUrl}/api/feedback`);
+      console.log('Data:', data);
+      
       const res = await fetch(`${apiUrl}/api/feedback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
       });
 
-      const json = await res.json();
+      console.log('Response status:', res.status);
+      
+      // Try to parse JSON, but handle non-JSON responses
+      let json;
+      const text = await res.text();
+      try {
+        json = JSON.parse(text);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', text);
+        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      }
 
       if (!res.ok) {
+        console.error('Error response:', json);
+        const errorMsg = json.error || `Failed to submit: ${res.status} ${res.statusText}`;
+        alert(`Error: ${errorMsg}\n\nAPI URL: ${apiUrl}\n\nCheck browser console for details.`);
         showNotif('error');
         return;
       }
@@ -53,6 +69,9 @@ export default function FeedbackForm({ apiUrl, onSuccess }) {
       showNotif('success');
       if (onSuccess) onSuccess();
     } catch (err) {
+      console.error('Network or other error:', err);
+      const errorMsg = err.message || 'Network error. Please check if the backend is running and accessible.';
+      alert(`Error: ${errorMsg}\n\nAPI URL: ${apiUrl}\n\nCheck browser console for details.`);
       showNotif('error');
     }
   };

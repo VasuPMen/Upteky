@@ -7,7 +7,15 @@ const morgan = require('morgan');
 const feedbackRoutes = require('./routes/feedback');
 
 const app = express();
-app.use(cors());
+
+// CORS configuration - allow all origins for now, or specify frontend URL
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || '*', // Allow all origins in production, or specify your frontend URL
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan('dev'));
 
